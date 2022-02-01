@@ -1,6 +1,5 @@
-// Created by Stephen Julian, 2018
-// based on tutorials by Sujay S. Phadke, 2017
-// For more info on these see: Github: https://github.com/electronicsguy
+// Created by Stephen Julian, 2018: https://github.com/bizkiwi/wireless-temp-monitor/google-apps-script-files
+// Based on tutorials by Sujay S. Phadke, 2017: https://github.com/electronicsguy
 //
 // START Notes from Sujay S. Phadke:
 // Read/Write to Google Sheets using REST API.

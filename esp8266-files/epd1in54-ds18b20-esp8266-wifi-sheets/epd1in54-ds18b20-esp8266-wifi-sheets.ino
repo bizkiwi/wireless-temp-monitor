@@ -1,8 +1,11 @@
-/**
- *  @filename   :   epd1in54-ds18b20-esp32-wifi-sheets.ino
- *  @brief      :   ESP32 with 1.54in ePaper Display, DS18B20 Temperature Sensor, WiFi Connectivity and integration with Google Sheets
+
+ /**
+ *  @filename   :   epd1in54-ds18b20-esp8266-wifi-sheets.ino
+ *  @brief      :   ESP8266 with 1.54in ePaper Display, DS18B20 Temperature Sensor, WiFi Connectivity and integration with Google Sheets
  *  @author     :   Stephen Julian
  *  @date       :   November 23 2018
+ *  @repository :   https://github.com/bizkiwi/wireless-temp-monitor/esp8266
+ *  @license    :   MIT License
  *
  *  Based on some or all of the following libraries and their tutorials:
  *  Library Header           Description
@@ -17,12 +20,14 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+
 #include <SPI.h>
 #include "epd1in54.h"
 #include "epdpaint.h"
 #include "imagedata.h"
 
 #include <HTTPSRedirect.h>
+#include <ESP8266WiFi.h>
 
 #define COLORED     0
 #define UNCOLORED   1
@@ -46,7 +51,6 @@ DallasTemperature ds18(&oneWire);
 // END TEMP SENSOR CODE
 
 /**
-  * Note from epaper library developer: 
   * Due to RAM not enough in Arduino UNO, a frame buffer is not allowed.
   * In this case, a smaller image buffer is allocated and you have to 
   * update a partial display several times.
@@ -166,8 +170,8 @@ bool SetupEpaper() {
   }
   Serial.flush();
   /** 
-   *  Note from epaper library developer: 
-   *  there are 2 memory areas embedded in the e-paper display
+   *  Note from epaper library developer:  
+   *  are 2 memory areas embedded in the e-paper display
    *  and once the display is refreshed, the memory area will be auto-toggled,
    *  i.e. the next action of SetFrameMemory will set the other memory area
    *  therefore you have to set the frame memory and refresh the display twice.
@@ -262,13 +266,11 @@ bool SetupWiFi() {
   }
 
   // Data will still be pushed even certification don't match.
-  /*
   if (client.verify(fingerprint, host)) {
     Serial.println("Certificate match.");
   } else {
     Serial.println("Certificate mis-match");
   }
-  */
   Serial.println("WiFi setup done");
   Serial.flush();
   return client.connected();
@@ -316,9 +318,9 @@ bool UpdateEpaperTime() {
   return true;
 }
 
-bool UpdateEpaperTemps(String thisString, int i) {
+bool UpdateEpaperTemps() {
   char outputString[] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'C', ' '};
-  
+  String thisString = (String)tempsC[i];
   int maxChar = 7; // thisString.length();
   int minChar = 0; // string start index
   if(!isDigit(thisString[0])) { // is char a symbol?
@@ -363,7 +365,6 @@ void loop() {
     for(byte i=0; i<ds18count; i++) {
       tempsC[i] = ds18.getTempCByIndex(ds18index[i]);
       tempsF[i] = ds18.getTempFByIndex(ds18index[i]);
-      String thisString = (String)tempsC[i];
       Serial.print("Sensor: "); Serial.print(i);
       Serial.print(" TempC: "); Serial.print(tempsC[i]);
       Serial.print(" TempF: "); Serial.print(tempsF[i]);
@@ -374,11 +375,10 @@ void loop() {
           PostData("Temp", tempsC[i]);
         }
       }
-      bool updateTempsOK = UpdateEpaperTemps(thisString, i);
     }
+    bool updateTempsOK = UpdateEpaperTemps();
     Serial.flush();
     ds18.requestTemperatures(); 
     ds18lastreq = millis();
   }
 }
-
